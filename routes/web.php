@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function (){
     Route::post('/logout', Logout::class)->name('logout');
     Route::post('/like/post/{post}',[PostLikeController::class,'like'])->name('like.post');
     Route::post('/like/comment/{comment}',[CommentLikeController::class,'like'])->name('like.comment');
+    Route::get('/post/{post}', [PostController::class, 'show'])->name('post.show');
     Route::post('/create/post',[PostController::class,'create'])->name('create.post');
     Route::post('/create/comment',[CommentController::class,'create'])->name('create.comment');
 });

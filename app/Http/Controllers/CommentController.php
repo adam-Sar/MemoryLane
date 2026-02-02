@@ -12,7 +12,15 @@ class CommentController extends Controller
         $data = $request->validate([
             "body" => 'required'
         ]);
-        Comment::create(["user_id"=>Auth::id(),"post_id"=>$request->post_id]+$data);
+        $comment = Comment::create(["user_id"=>Auth::id(),"post_id"=>$request->post_id]+$data);
+        
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'comment' => $comment->load('user') // Load user for the frontend to display name/avatar
+            ]);
+        }
+        
         return redirect()->back();
     }
 }

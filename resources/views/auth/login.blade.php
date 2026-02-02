@@ -37,9 +37,9 @@
         <section class="landing-hero">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1>Rediscover forgotten games, movies, and series!</h1>
-                    <p>Join the fun of memory sharing. Dive into a nostalgic journey with our curated collection of classics.</p>
-                    <a href="{{ route('register') }}" class="btn btn-primary" style="padding: 1rem 2.5rem; border-radius: 99px;">Get started</a>
+                    <h1>Can't remember the name of that game?</h1>
+                    <p>Describe the gameplay, art style, or characters you remember. Our community is here to help you find the title you've been searching for.</p>
+                    <a href="{{ route('register') }}" class="btn btn-primary" style="padding: 1rem 2.5rem; border-radius: 99px;">Ask the Community</a>
                 </div>
                 <div class="hero-image">
                     <img src="{{ asset('assets/img/hero.png') }}" alt="Memory Lane Hero">

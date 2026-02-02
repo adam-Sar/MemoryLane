@@ -19,7 +19,7 @@ class HomeController extends Controller
         $posts->where('tag',$tag);
     }
 
-    $posts=$posts->withCount('likes')
+    $posts=$posts->withCount(['likes', 'comments'])
     ->addSelect(DB::raw(
         'EXISTS (
             SELECT 1
@@ -29,17 +29,7 @@ class HomeController extends Controller
         )::int AS liked_by_me'
     ))
      ->with([
-        'comments' => function ($q) {
-            $q->withCount('likes')  
-              ->addSelect(DB::raw(
-                  'EXISTS (
-                      SELECT 1
-                      FROM comment_likes
-                      WHERE comment_likes.comment_id = comments.id
-                      AND comment_likes.user_id = ' . (int) Auth::id() . '
-                  )::int AS liked_by_me'
-              ));
-        }
+        'user'
     ])
     ->orderByDesc('id')
     ->cursorPaginate(15)

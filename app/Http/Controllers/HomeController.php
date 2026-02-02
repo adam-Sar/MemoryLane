@@ -28,7 +28,7 @@ class HomeController extends Controller
             AND post_likes.user_id = ' . (int) Auth::id() . '
         )::int AS liked_by_me'
     ))
-     ->with([
+    ->with([
         'user'
     ])
     ->orderByDesc('id')

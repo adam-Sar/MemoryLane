@@ -21,6 +21,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Auth::provider('cached_eloquent', function ($app, array $config) {
+            return new \App\Providers\CachedEloquentUserProvider($app['hash'], $config['model']);
+        });
     }
 }

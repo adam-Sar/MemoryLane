@@ -320,7 +320,7 @@
                         <span class="post-author">{{ $post->user->name ?? 'Anonymous' }}</span>
                         <span class="post-date">
                             {{ $post->tag }} • 
-                             2h ago <!-- Placeholder for real date if not available -->
+                             {{ \Carbon\Carbon::parse($post->inserted_at)->diffForHumans() }} <!-- Placeholder for real date if not available -->
                         </span>
                     </div>
                 </div>

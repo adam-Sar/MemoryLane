@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth')->group(function (){
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::post('/logout', Logout::class)->name('logout');
     Route::post('/like/post/{post}',[PostLikeController::class,'like'])->name('like.post');
     Route::post('/like/comment/{comment}',[CommentLikeController::class,'like'])->name('like.comment');

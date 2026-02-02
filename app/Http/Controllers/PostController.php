@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Auth;
 class PostController extends Controller
 {
     public function show($id) {
+        // Fetch post without user relation first
         $post = Post::query()
             ->where('id', $id)
-            ->withCount('likes')
+            ->withCount(['likes', 'comments'])
             ->addSelect(\Illuminate\Support\Facades\DB::raw(
                 'EXISTS (
                     SELECT 1
@@ -20,12 +21,10 @@ class PostController extends Controller
                     AND post_likes.user_id = ' . (int) Auth::id() . '
                 )::int AS liked_by_me'
             ))
-            ->with('user')
             ->firstOrFail();
             
-        // Separate query for comments to support pagination
+        // Fetch comments without user relation
         $comments = \App\Models\Comment::where('post_id', $id)
-            ->with('user')
             ->withCount('likes')
             ->addSelect(\Illuminate\Support\Facades\DB::raw(
                 'EXISTS (
@@ -35,8 +34,23 @@ class PostController extends Controller
                     AND comment_likes.user_id = ' . (int) Auth::id() . '
                 )::int AS liked_by_me'
             ))
-            ->orderByDesc('id') // Newest first usually
+            ->orderByDesc('id')
             ->cursorPaginate(20);
+
+        // Collect all unique user IDs from post + comments in ONE query
+        $userIds = collect([$post->user_id])
+            ->merge($comments->pluck('user_id'))
+            ->unique()
+            ->values();
+        
+        // Single query to fetch all users
+        $users = \App\Models\User::whereIn('id', $userIds)->get()->keyBy('id');
+        
+        // Manually set the user relationships
+        $post->setRelation('user', $users->get($post->user_id));
+        $comments->each(function($comment) use ($users) {
+            $comment->setRelation('user', $users->get($comment->user_id));
+        });
 
         return view('posts.show', compact('post', 'comments'));
     }

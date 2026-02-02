@@ -12,8 +12,10 @@ class Post extends Model
     protected $fillable = [
         'user_id',
         'title',
-        'body'
+        'body',
+        'tag'
     ];
+    public $timestamps = false;
     
     public function posts(){
         return $this->all();

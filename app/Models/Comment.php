@@ -13,7 +13,7 @@ class Comment extends Model
         'post_id',
         'body'
     ];
-
+    public $timestamps = false;
     public function user(){
         return $this->belongsTo(User::class);
     }
@@ -21,7 +21,7 @@ class Comment extends Model
         return $this->belongsTo(Post::class);
     }
     public function likes() {
-        return $this->hasMany(PostLike::class);
+        return $this->hasMany(CommentLike::class);
     }
     public function likesCount()
     {   

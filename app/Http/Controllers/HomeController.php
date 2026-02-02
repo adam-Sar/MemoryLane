@@ -42,7 +42,8 @@ class HomeController extends Controller
         }
     ])
     ->orderByDesc('id')
-    ->cursorPaginate(15);
+    ->cursorPaginate(15)
+    ->withQueryString();
 
 
     return view('/home', compact('posts'));

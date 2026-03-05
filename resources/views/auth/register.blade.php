@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>GameRecovery - Register</title>
+    <title>MemoryLane - Register</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- Scripts & Styles -->
-    @vite(['resources/css/app.css'])
+    @vite(['resources/css/modern.css'])
 </head>
 <body class="auth-wrapper">
     <!-- Background Effects -->
@@ -28,7 +28,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: 0 auto 1rem; color: var(--neon-cyan); filter: drop-shadow(0 0 15px var(--neon-cyan));">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
-                GameRecovery
+                MemoryLane
             </h1>
             <p style="color: var(--text-muted); font-size: 1rem; letter-spacing: 0.5px;">Find Your Forgotten Games</p>
         </div>
@@ -134,7 +134,7 @@
                 </a>
             </div>
             <p style="color: var(--text-muted); font-size: 0.75rem;">
-                © 2026 GameRecovery. All rights reserved.
+                © 2026 MemoryLane. All rights reserved.
             </p>
         </div>
     </div>

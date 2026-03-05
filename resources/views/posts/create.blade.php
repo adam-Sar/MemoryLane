@@ -445,6 +445,28 @@
                     </div>
                 </div>
                 <canvas id="doodle-canvas" width="600" height="400"></canvas>
+                
+                <!-- Save Doodle Button -->
+                <div class="doodle-actions" style="margin-top: 1rem; display: none;" id="doodle-actions">
+                    <button type="button" class="btn btn-primary" onclick="saveDoodlePreview()" style="width: 100%;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Save Doodle as Image
+                    </button>
+                </div>
+                
+                <!-- Doodle Preview -->
+                <div class="preview-container" id="doodle-canvas-preview" style="margin-top: 1rem; display: none;">
+                    <img src="" alt="Doodle preview" class="preview-image">
+                    <button type="button" class="remove-btn" onclick="clearDoodlePreview()">✕</button>
+                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; border-radius: var(--radius-sm); color: #00ff00; font-size: 0.85rem; text-align: center;">
+                        ✓ Doodle saved! It will be attached to your post.
+                    </div>
+                </div>
+                
                 <input type="hidden" name="doodle_data" id="doodle-data">
             </div>
             
@@ -487,6 +509,7 @@ let currentColor = '#ffffff';
 let currentSize = 3;
 let lastX = 0;
 let lastY = 0;
+let hasDoodled = false; // Track if user has drawn anything
 
 // Initialize Canvas
 document.addEventListener('DOMContentLoaded', function() {
@@ -498,6 +521,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial canvas background
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Save initial blank state for comparison
+    canvas.initialState = canvas.toDataURL();
     
     // Mouse events
     canvas.addEventListener('mousedown', startDrawing);
@@ -560,7 +586,83 @@ function draw(e) {
 
 // Stop drawing
 function stopDrawing() {
+    if (!isDrawing) return;
     isDrawing = false;
+    
+    // Check if canvas has been modified from initial state
+    const currentState = canvas.toDataURL();
+    hasDoodled = currentState !== canvas.initialState;
+    
+    // Check if canvas is now blank (user erased everything)
+    const isBlank = checkIfCanvasBlank();
+    
+    // Show/hide save button based on whether user has drawn and if canvas is blank
+    updateDoodleButtonVisibility();
+}
+
+// Check if canvas is blank (only background color, no drawings)
+function checkIfCanvasBlank() {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    // Check every pixel - if any is not background color, canvas is not blank
+    // Background color is #1a1a2e which is RGB(26, 26, 46)
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+        
+        // If alpha is 0 (erased) or pixel doesn't match background color, it's not blank
+        if (a === 0 || (r !== 26 || g !== 26 || b !== 46)) {
+            return false; // Not blank
+        }
+    }
+    
+    // All pixels match background color
+    hasDoodled = false;
+    return true; // Blank
+}
+
+// Update save button visibility
+function updateDoodleButtonVisibility() {
+    const doodleActions = document.getElementById('doodle-actions');
+    const doodlePreview = document.getElementById('doodle-canvas-preview');
+    
+    // Check if canvas is blank
+    const isBlank = checkIfCanvasBlank();
+    
+    // Only show save button if canvas has content and not already saved
+    if (!isBlank && hasDoodled && doodlePreview.style.display === 'none') {
+        doodleActions.style.display = 'block';
+    } else {
+        doodleActions.style.display = 'none';
+    }
+}
+
+// Save doodle as preview
+function saveDoodlePreview() {
+    const dataUrl = canvas.toDataURL('image/png');
+    document.getElementById('doodle-data').value = dataUrl;
+    
+    // Show preview
+    const doodlePreview = document.getElementById('doodle-canvas-preview');
+    doodlePreview.querySelector('img').src = dataUrl;
+    doodlePreview.classList.add('has-image');
+    doodlePreview.style.display = 'block';
+    
+    // Hide save button
+    document.getElementById('doodle-actions').style.display = 'none';
+}
+
+// Clear doodle preview
+function clearDoodlePreview() {
+    document.getElementById('doodle-data').value = '';
+    document.getElementById('doodle-canvas-preview').style.display = 'none';
+    document.getElementById('doodle-canvas-preview').classList.remove('has-image');
+    
+    // Show save button again if doodled
+    updateDoodleButtonVisibility();
 }
 
 // Touch events for mobile
@@ -629,6 +731,15 @@ function clearCanvas() {
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = 'source-over';
+    
+    // Reset doodle state
+    hasDoodled = false;
+    
+    // Hide save button and preview
+    document.getElementById('doodle-actions').style.display = 'none';
+    document.getElementById('doodle-canvas-preview').style.display = 'none';
+    document.getElementById('doodle-canvas-preview').classList.remove('has-image');
+    document.getElementById('doodle-data').value = '';
 }
 
 // Save canvas to hidden input

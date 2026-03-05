@@ -25,19 +25,32 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth')->group(function (){
+    // Home route - view the feed
     Route::get('/', [HomeController::class, 'index'])->name('home');
+
     Route::post('/logout', Logout::class)->name('logout');
     Route::post('/like/post/{post}',[PostLikeController::class,'like'])->name('like.post');
     Route::post('/like/comment/{comment}',[CommentLikeController::class,'like'])->name('like.comment');
+    
+    // Create post page
+    Route::get('/posts/create', [PostController::class, 'index'])->name('posts.create');
+    
+    // Post viewing
     Route::get('/post/{post}', [PostController::class, 'show'])->name('post.show');
-    Route::post('/create/post',[PostController::class,'create'])->name('create.post');
+
+    Route::post('/create/post',[PostController::class,'store'])->name('create.post');
     Route::post('/create/comment',[CommentController::class,'create'])->name('create.comment');
 });
 
 Route::middleware('guest')->group(function (){
-    Route::view('/register', 'auth.register')->name('register');
+    Route::get('/register', function() {
+        return view('auth.register');
+    })->name('register');
     Route::post('/register', Register::class);
-    Route::view('/login', 'auth.login')->name('login');
+
+    Route::get('/login', function() {
+        return view('auth.login');
+    })->name('login');
     Route::post('/login', Login::class);
 });
 

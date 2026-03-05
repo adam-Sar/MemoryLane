@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('optimize_performance', function (Blueprint $table) {
-            $table->index('user_id');
-            $table->index('post_id');
-            $table->index('comment_id');
-            $table->index('tag');
-            $table->index('created_at');
+        Schema::table('posts', function (Blueprint $table) {
+            $table->string('screenshot_path')->nullable()->after('tag');
+            $table->string('doodle_path')->nullable()->after('screenshot_path');
         });
     }
 
@@ -25,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('optimize_performance', function (Blueprint $table) {
-            //
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropColumn(['screenshot_path', 'doodle_path']);
         });
     }
 };

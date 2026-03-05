@@ -1,16 +1,12 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from '@tailwindcss/vite';
+
 export default defineConfig({
-    server: {
-        allowedHosts: [
-            '.ngrok-free.dev',
-        ],
-    },
     plugins: [
         tailwindcss(),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/css/modern.css'],
             refresh: true,
         }),
     ],

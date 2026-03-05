@@ -35,8 +35,18 @@ class HomeController extends Controller
     ->cursorPaginate(15)
     ->withQueryString();
 
+    if ($request->ajax()) {
+        $html = '';
+        foreach ($posts as $post) {
+            $html .= view('partials.post-card', compact('post'))->render();
+        }
+        return response()->json([
+            'html' => $html,
+            'next_page' => $posts->nextPageUrl()
+        ]);
+    }
 
-    return view('/home', compact('posts'));
+    return view('Home', compact('posts'));
 }
 
 }

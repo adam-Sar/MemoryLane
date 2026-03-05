@@ -53,6 +53,24 @@
         background-color: rgba(253, 164, 175, 0.1); /* Primary with opacity */
         color: var(--primary);
     }
+    
+    .nav-create-sidebar {
+        background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+        color: #fff;
+        border: 2px solid var(--neon-cyan);
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        font-weight: 600;
+    }
+    
+    .nav-create-sidebar:hover {
+        transform: translateX(5px);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+    
+    .nav-create-sidebar svg {
+        stroke: #fff;
+        stroke-width: 2.5;
+    }
 
     /* Feed */
     .feed-column {
@@ -251,13 +269,54 @@
     <!-- Left Sidebar: Navigation -->
     <aside class="sidebar-left">
         <nav class="sidebar-nav">
-            <a href="{{ route('home') }}" class="nav-item {{ !request('tag') ? 'active' : '' }}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Home
+            <a href="{{ route('posts.create') }}" class="nav-item nav-create-sidebar" style="margin-bottom: 1rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                <span>Create Post</span>
             </a>
             
-            <div style="margin: 1rem 0 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
-                Topics
+            <a href="{{ route('home') }}" class="nav-item {{ !request('tag') ? 'active' : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>Home</span>
+            </a>
+            
+            <a href="#" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                </svg>
+                <span>Trending</span>
+            </a>
+            
+            <a href="#" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Messages</span>
+            </a>
+            
+            <a href="#" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span>Bookmarks</span>
+            </a>
+            
+            <a href="#" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>My Posts</span>
+            </a>
+            
+            <div style="margin: 2rem 0 0.75rem 1.25rem; font-size: 0.7rem; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 0.15em;">
+                <span style="border-bottom: 2px solid var(--neon-cyan); padding-bottom: 0.25rem;">Game Categories</span>
             </div>
             
             @php
@@ -286,78 +345,27 @@
 
     <!-- Center: Feed -->
     <main class="feed-column">
-        <!-- Create Post Widget -->
-        <div class="create-post-card">
-            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
-                <div class="user-avatar" style="width: 40px; height: 40px;">
-                    {{ substr(Auth::user()->name ?? 'U', 0, 1) }}
-                </div>
-                <div class="create-input-fake" onclick="toggleModal('createPostModal')" style="flex: 1;">
-                    Describe notice details of the game you can't remember...
-                </div>
-            </div>
-            <div style="display: flex; gap: 1rem; padding-top: 0.5rem; border-top: 1px solid var(--border);">
-               <button class="action-btn" onclick="toggleModal('createPostModal')">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                   Screenshot / Sketch
-               </button>
-               <button class="action-btn" onclick="toggleModal('createPostModal')">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                   Description
-               </button>
+        <!-- Posts Container -->
+        <div id="posts-container" class="feed-column">
+            @foreach($posts as $post)
+                @include('partials.post-card', ['post' => $post])
+            @endforeach
+        </div>
+
+        <!-- Scroll Sentinel -->
+        <div id="infinite-scroll-sentinel" style="height: 10px; margin-bottom: 50px;"></div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" style="display: none;">
+            <div class="spinner-wrapper">
+                <div class="app-spinner"></div>
+                <span class="spinner-text">Finding more memories...</span>
             </div>
         </div>
 
-        <!-- Posts Loop -->
-        @foreach($posts as $post)
-            <article class="post-card">
-                <!-- Post Header -->
-                <div class="post-header">
-                    <div class="user-avatar">
-                        {{ substr($post->user->name ?? '?', 0, 1) }}
-                    </div>
-                    <div class="post-meta">
-                        <span class="post-author">{{ $post->user->name ?? 'Anonymous' }}</span>
-                        <span class="post-date">
-                            {{ $post->tag }} • 
-                             {{ \Carbon\Carbon::parse($post->inserted_at)->diffForHumans() }} <!-- Placeholder for real date if not available -->
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Post Content -->
-                <div class="post-content">
-                    <a href="{{ route('post.show', $post) }}" class="post-title" style="display:block; text-decoration:none; color:var(--text-main);">
-                        {{ $post->title }}
-                    </a>
-                    <div class="post-body">{{ Str::limit($post->body, 300) }}</div>
-                </div>
-
-                <!-- Post Actions -->
-                <div class="post-actions">
-                    <button 
-                        class="action-btn {{ $post->liked_by_me ? 'liked' : '' }}" 
-                        onclick="likePost(this, {{ $post->id }})"
-                        data-liked-by-me="{{ $post->liked_by_me }}"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                        <span>{{ $post->likes_count }}</span> Likes
-                    </button>
-                    
-                    <a href="{{ route('post.show', $post) }}" class="action-btn" style="text-decoration: none;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <span>{{ $post->comments_count }}</span> Comments
-                    </a>
-                    @if($post->tag)
-                        <span class="post-tag">{{ $post->tag }}</span>
-                    @endif
-                </div>
-            </article>
-        @endforeach
-        
-        <!-- Pagination -->
-        <div style="margin-top: 2rem;">
-            {{ $posts->links('pagination.simple-modern') }}
+        <!-- Hidden Pagination for initial state -->
+        <div id="pagination-links" style="display: none;">
+            {{ $posts->links() }}
         </div>
     </main>
 
@@ -396,44 +404,6 @@
             </div>
         </div>
     </aside>
-</div>
-
-<!-- Create Post Modal -->
-<div id="createPostModal" class="modal-overlay">
-    <div class="modal">
-        <div class="modal-header">
-            <h2>Ask the Community</h2>
-            <button onclick="document.getElementById('createPostModal').classList.remove('active')" class="close-modal">✕</button>
-        </div>
-        
-        <form action="{{ route('create.post') }}" method="POST">
-            @csrf
-            
-            <div class="form-group">
-                <label class="form-label">Subject</label>
-                <input type="text" name="title" class="form-control" required placeholder="e.g. PS2 RPG where you play as a dragon...">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Details</label>
-                <textarea name="body" class="form-control" rows="5" required placeholder="Describe everything you remember (Platform, Year, Characters, Gameplay mechanics, Art style)..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Tag</label>
-                <select name="tag" class="form-control">
-                     @foreach (['Battle-Royale','RTS','RPG','FPS','Action','Sports','Mobile'] as $tag)
-                        <option value="{{$tag}}">{{$tag}}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button type="button" onclick="document.getElementById('createPostModal').classList.remove('active')" class="btn btn-flat">Cancel</button>
-                <button type="submit" class="btn btn-primary">Post</button>
-            </div>
-        </form>
-    </div>
 </div>
 
 @push('scripts')
@@ -520,6 +490,95 @@ function toggleComments(id) {
         el.style.display = 'block';
     } else {
         el.style.display = 'none';
+    }
+}
+
+// Toggle post media (screenshot ↔ doodle)
+function togglePostMedia(btn, postId) {
+    const container = btn.parentElement;
+    const screenshot = container.querySelector('.post-media-screenshot');
+    const doodle = container.querySelector('.post-media-doodle');
+    
+    if (!screenshot || !doodle) return;
+    
+    const isShowingScreenshot = screenshot.classList.contains('active');
+    
+    if (isShowingScreenshot) {
+        // Switch to doodle
+        screenshot.classList.remove('active');
+        setTimeout(() => {
+            screenshot.style.display = 'none';
+        }, 300);
+        
+        doodle.style.display = 'block';
+        setTimeout(() => {
+            doodle.classList.add('active');
+        }, 50);
+        
+        btn.textContent = 'View Screenshot 📷';
+        btn.classList.add('showing-doodle');
+    } else {
+        // Switch to screenshot
+        doodle.classList.remove('active');
+        setTimeout(() => {
+            doodle.style.display = 'none';
+        }, 300);
+        
+        screenshot.style.display = 'block';
+        setTimeout(() => {
+            screenshot.classList.add('active');
+        }, 50);
+        
+        btn.textContent = 'View Doodle 🎨';
+        btn.classList.remove('showing-doodle');
+    }
+}
+
+// Infinite Scroll Logic
+let nextPageUrl = document.querySelector('#pagination-links a[rel="next"]')?.href;
+let isLoading = false;
+
+const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && nextPageUrl && !isLoading) {
+        loadMorePosts();
+    }
+}, {
+    rootMargin: '200px'
+});
+
+const sentinel = document.getElementById('infinite-scroll-sentinel');
+if (sentinel) observer.observe(sentinel);
+
+async function loadMorePosts() {
+    if (!nextPageUrl || isLoading) return;
+
+    isLoading = true;
+    document.getElementById('loading-indicator').style.display = 'block';
+
+    try {
+        const response = await fetch(nextPageUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.html) {
+            const container = document.getElementById('posts-container');
+            container.insertAdjacentHTML('beforeend', data.html);
+            nextPageUrl = data.next_page;
+        }
+
+        if (!nextPageUrl) {
+            observer.unobserve(sentinel);
+            sentinel.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+    } finally {
+        isLoading = false;
+        document.getElementById('loading-indicator').style.display = 'none';
     }
 }
 </script>

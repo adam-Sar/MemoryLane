@@ -32,10 +32,22 @@
 
     /* Post Detail Styling */
     .post-detail-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
+        background: linear-gradient(145deg, var(--bg-card), var(--bg-darker));
+        border: 2px solid var(--border);
         border-radius: var(--radius-lg);
         overflow: hidden;
+        box-shadow: var(--shadow-card);
+        position: relative;
+    }
+    
+    .post-detail-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
     }
 
     .post-header {
@@ -43,59 +55,65 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid var(--border);
     }
 
     .user-avatar {
-        width: 48px;
-        height: 48px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
+        font-weight: 800;
         color: #fff;
-        font-size: 1.2rem;
+        font-size: 1.4rem;
+        border: 3px solid var(--neon-cyan);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
     }
 
     .post-content {
-        padding: 2rem;
+        padding: 2.5rem;
     }
 
     .post-title {
-        font-size: 2rem;
-        margin-bottom: 1rem;
+        font-size: 2.2rem;
+        margin-bottom: 1.5rem;
         color: var(--text-main);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1.3;
     }
 
     .post-body {
         font-size: 1.1rem;
-        line-height: 1.8;
+        line-height: 1.9;
         color: var(--text-muted);
         white-space: pre-wrap;
     }
 
     .post-tag {
         display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: rgba(253, 164, 175, 0.1);
-        color: var(--primary);
+        padding: 0.4rem 1rem;
+        background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(176, 38, 255, 0.15));
+        color: var(--neon-cyan);
+        border: 1px solid var(--neon-cyan);
         border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        margin-top: 0.2rem;
-        align-items:right;
-        margin-left: auto; 
-        font-size:20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
     }
 
     .post-actions {
-        padding: 1rem 2rem;
-        background: rgba(0,0,0,0.1);
+        padding: 1.25rem 2.5rem;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent);
         display: flex;
-        gap: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.05);
+        gap: 1.5rem;
+        border-top: 1px solid var(--border);
     }
 
     .action-btn {
@@ -173,6 +191,79 @@
         border-radius: var(--radius-md);
         padding: 0.2rem;
     }
+    
+    /* Media Tabs for Detail Page */
+    .post-media-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .media-tab {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        background: var(--bg-input);
+        border: 2px solid var(--border);
+        border-radius: 999px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .media-tab:hover {
+        border-color: var(--text-muted);
+        color: var(--text-main);
+    }
+    
+    .media-tab.active {
+        background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+        border-color: var(--neon-cyan);
+        color: #fff;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+    }
+    
+    .post-media-content {
+        position: relative;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 2px solid var(--border);
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .detail-media {
+        width: 100%;
+        max-height: 500px;
+        object-fit: cover;
+        display: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+    
+    .detail-media.active {
+        display: block;
+        opacity: 1;
+    }
+    
+    .detail-media-doodle {
+        max-height: 400px;
+        border: 3px dashed var(--neon-purple);
+    }
+    
+    .detail-image {
+        width: 100%;
+        max-height: 500px;
+        object-fit: cover;
+        display: block;
+        border-radius: var(--radius-md);
+    }
+    
+    .detail-image.doodle {
+        max-height: 400px;
+        border: 3px dashed var(--neon-purple);
+    }
+    
     #commentBody {
         display: block;
         width: 100%;
@@ -220,6 +311,50 @@
             <div class="post-content">
                 <h1 class="post-title">{{ $post->title }}</h1>
                 <div class="post-body">{{ $post->body }}</div>
+                
+                <!-- Media Display -->
+                @if($post->screenshot_path && $post->doodle_path)
+                    <!-- Both: Tab switcher -->
+                    <div class="post-media-tabs" data-post-id="{{ $post->id }}">
+                        <button type="button" class="media-tab active" data-tab="screenshot" onclick="switchMediaTab(this, 'screenshot')">
+                            Screenshot
+                        </button>
+                        <button type="button" class="media-tab" data-tab="doodle" onclick="switchMediaTab(this, 'doodle')">
+                            Doodle 🎨
+                        </button>
+                    </div>
+                    <div class="post-media-content">
+                        <img 
+                            src="{{ asset('storage/' . $post->screenshot_path) }}" 
+                            alt="Screenshot" 
+                            class="detail-media detail-media-screenshot active"
+                        >
+                        <img 
+                            src="{{ asset('storage/' . $post->doodle_path) }}" 
+                            alt="Doodle" 
+                            class="detail-media detail-media-doodle"
+                        >
+                    </div>
+                @elseif($post->screenshot_path)
+                    <!-- Screenshot only -->
+                    <div class="post-image-container">
+                        <img 
+                            src="{{ asset('storage/' . $post->screenshot_path) }}" 
+                            alt="Screenshot" 
+                            class="detail-image"
+                        >
+                    </div>
+                @elseif($post->doodle_path)
+                    <!-- Doodle only -->
+                    <div class="post-image-container">
+                        <img 
+                            src="{{ asset('storage/' . $post->doodle_path) }}" 
+                            alt="Doodle" 
+                            class="detail-image doodle"
+                        >
+                    </div>
+                @endif
+                <!-- Text only: No media -->
             </div>
 
             <div class="post-actions">
@@ -435,6 +570,43 @@
     function autoResize(el) {
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
+    }
+
+    // Switch media tabs (screenshot ↔ doodle)
+    function switchMediaTab(btn, tabName) {
+        const tabsContainer = btn.parentElement;
+        const contentContainer = tabsContainer.nextElementSibling;
+        
+        // Update tab buttons
+        const tabs = tabsContainer.querySelectorAll('.media-tab');
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.tab === tabName) {
+                tab.classList.add('active');
+            }
+        });
+        
+        // Update media visibility
+        const screenshot = contentContainer.querySelector('.detail-media-screenshot');
+        const doodle = contentContainer.querySelector('.detail-media-doodle');
+        
+        if (!screenshot || !doodle) return;
+        
+        // Fade out current
+        const activeMedia = contentContainer.querySelector('.detail-media.active');
+        if (activeMedia) {
+            activeMedia.classList.remove('active');
+            setTimeout(() => {
+                activeMedia.style.display = 'none';
+            }, 300);
+        }
+        
+        // Fade in new
+        const newMedia = tabName === 'screenshot' ? screenshot : doodle;
+        newMedia.style.display = 'block';
+        setTimeout(() => {
+            newMedia.classList.add('active');
+        }, 50);
     }
 
 </script>

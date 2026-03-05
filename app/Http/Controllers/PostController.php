@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
+    public function index() {
+        return view('posts.create');
+    }
+
     public function show($id) {
         // Fetch post without user relation first
         $post = Post::query()
@@ -55,13 +60,59 @@ class PostController extends Controller
         return view('posts.show', compact('post', 'comments'));
     }
 
-    function create(Request $request){
+    function store(Request $request){
         $data = $request->validate([
             "title" => 'required|min:3',
             "body" => 'required',
-            'tag'=> 'in:Battle-Royale,RTS,RPG,FPS,Action,Sports,Mobile'
+            'tag'=> 'in:Battle-Royale,RTS,RPG,FPS,Action,Sports,Mobile',
+            'screenshot' => 'nullable|image|max:5120', // 5MB max
+            'doodle' => 'nullable|image|max:5120', // 5MB max
+            'doodle_data' => 'nullable|string', // For canvas data
         ]);
-        Post::create(["user_id"=>Auth::id()] + $data);
-        return redirect()->back();
+
+        // Handle screenshot upload
+        $screenshotPath = null;
+        if ($request->hasFile('screenshot')) {
+            $screenshotPath = $request->file('screenshot')->store('posts', 'public');
+        }
+
+        // Handle doodle - either from file or canvas
+        $doodlePath = null;
+        if ($request->hasFile('doodle')) {
+            $doodlePath = $request->file('doodle')->store('posts', 'public');
+        } elseif ($request->has('doodle_data') && !empty($request->doodle_data)) {
+            // Handle canvas data (base64 image)
+            $doodlePath = $this->saveCanvasData($request->doodle_data);
+        }
+
+        Post::create([
+            'user_id' => Auth::id(),
+            'title' => $data['title'],
+            'body' => $data['body'],
+            'tag' => $data['tag'],
+            'screenshot_path' => $screenshotPath,
+            'doodle_path' => $doodlePath,
+        ]);
+
+        return redirect()->route('home')->with('success', 'Post created successfully!');
+    }
+
+    /**
+     * Save canvas data (base64) as image file
+     */
+    private function saveCanvasData($base64Data)
+    {
+        // Remove data URL prefix
+        $base64Data = preg_replace('#^data:image/\w+;base64,#i', '', $base64Data);
+        $base64Data = base64_decode($base64Data);
+        
+        // Generate unique filename
+        $filename = 'doodle_' . uniqid() . '_' . time() . '.png';
+        $path = 'posts/' . $filename;
+        
+        // Store image
+        Storage::disk('public')->put($path, $base64Data);
+        
+        return $path;
     }
 }

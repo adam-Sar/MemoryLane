@@ -13,7 +13,9 @@ class Post extends Model
         'user_id',
         'title',
         'body',
-        'tag'
+        'tag',
+        'screenshot_path',
+        'doodle_path'
     ];
     public $timestamps = false;
     

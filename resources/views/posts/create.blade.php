@@ -343,13 +343,29 @@
         </div>
 
         <!-- Tag -->
-        <div class="form-group" style="margin-bottom: 2rem;">
+        <div class="form-group" style="margin-bottom: 1.5rem;">
             <label class="form-label">Game Category</label>
             <select name="tag" class="form-control" style="font-size: 1rem;">
                 @foreach (['Battle-Royale','RTS','RPG','FPS','Action','Sports','Mobile'] as $tag)
                     <option value="{{$tag}}">{{$tag}}</option>
                 @endforeach
             </select>
+        </div>
+
+        <!-- Community Selection -->
+        <div class="form-group" style="margin-bottom: 2rem;">
+            <label class="form-label">Community (Optional)</label>
+            <select name="community_id" class="form-control" style="font-size: 1rem;">
+                <option value="">No Community</option>
+                @foreach($communities ?? [] as $community)
+                    <option value="{{ $community->id }}" @if(request()->get('community') == $community->id) selected @endif>
+                        {{ $community->name }}
+                    </option>
+                @endforeach
+            </select>
+            <div style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">
+                Post to a community to reach like-minded gamers
+            </div>
         </div>
 
         <!-- Screenshot Upload -->

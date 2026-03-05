@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\Logout;
 use App\Http\Controllers\Auth\Register;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CommentLikeController;
+use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostLikeController;
@@ -40,6 +41,14 @@ Route::middleware('auth')->group(function (){
 
     Route::post('/create/post',[PostController::class,'store'])->name('create.post');
     Route::post('/create/comment',[CommentController::class,'create'])->name('create.comment');
+    
+    // Community routes
+    Route::get('/communities', [CommunityController::class, 'index'])->name('communities.index');
+    Route::get('/communities/create', [CommunityController::class, 'create'])->name('communities.create');
+    Route::post('/communities', [CommunityController::class, 'store'])->name('communities.store');
+    Route::get('/c/{community}', [CommunityController::class, 'show'])->name('communities.show');
+    Route::post('/communities/{community}/join', [CommunityController::class, 'join'])->name('communities.join');
+    Route::post('/communities/{community}/leave', [CommunityController::class, 'leave'])->name('communities.leave');
 });
 
 Route::middleware('guest')->group(function (){

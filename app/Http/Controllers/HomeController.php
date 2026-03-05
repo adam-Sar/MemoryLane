@@ -29,7 +29,8 @@ class HomeController extends Controller
         )::int AS liked_by_me'
     ))
     ->with([
-        'user'
+        'user',
+        'community'
     ])
     ->orderByDesc('id')
     ->cursorPaginate(15)

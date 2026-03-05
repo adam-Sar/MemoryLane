@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Storage;
 class PostController extends Controller
 {
     public function index() {
-        return view('posts.create');
+        $communities = \App\Models\Community::whereHas('members', function($q) {
+            $q->where('user_id', Auth::id());
+        })->orderBy('name')->get();
+        return view('posts.create', compact('communities'));
     }
 
     public function show($id) {
@@ -28,34 +31,14 @@ class PostController extends Controller
             ))
             ->firstOrFail();
             
-        // Fetch comments without user relation
+        // Fetch comments using native eager loading (handles N+1 automatically without manual user array merging)
+        // the Comment model now automatically appends liked_by_me based on the myLike relationship.
         $comments = \App\Models\Comment::where('post_id', $id)
+            ->whereNull('parent_id') // Only fetch top-level comments
             ->withCount('likes')
-            ->addSelect(\Illuminate\Support\Facades\DB::raw(
-                'EXISTS (
-                    SELECT 1
-                    FROM comment_likes
-                    WHERE comment_likes.comment_id = comments.id
-                    AND comment_likes.user_id = ' . (int) Auth::id() . '
-                )::int AS liked_by_me'
-            ))
+            ->with(['allReplies', 'user', 'myLike', 'parent.user']) // Eager load replies, users, and myLike across all nestings
             ->orderByDesc('id')
             ->cursorPaginate(20);
-
-        // Collect all unique user IDs from post + comments in ONE query
-        $userIds = collect([$post->user_id])
-            ->merge($comments->pluck('user_id'))
-            ->unique()
-            ->values();
-        
-        // Single query to fetch all users
-        $users = \App\Models\User::whereIn('id', $userIds)->get()->keyBy('id');
-        
-        // Manually set the user relationships
-        $post->setRelation('user', $users->get($post->user_id));
-        $comments->each(function($comment) use ($users) {
-            $comment->setRelation('user', $users->get($comment->user_id));
-        });
 
         return view('posts.show', compact('post', 'comments'));
     }
@@ -68,6 +51,14 @@ class PostController extends Controller
             'screenshot' => 'nullable|image|max:5120', // 5MB max
             'doodle' => 'nullable|image|max:5120', // 5MB max
             'doodle_data' => 'nullable|string', // For canvas data
+            'community_id' => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('community_members', 'community_id')->where(function ($query) {
+                    return $query->where('user_id', Auth::id());
+                }),
+            ],
+        ], [
+            'community_id.exists' => 'You must be a member of this community to post in it.',
         ]);
 
         // Handle screenshot upload
@@ -92,6 +83,7 @@ class PostController extends Controller
             'tag' => $data['tag'],
             'screenshot_path' => $screenshotPath,
             'doodle_path' => $doodlePath,
+            'community_id' => $data['community_id'] ?? null,
         ]);
 
         return redirect()->route('home')->with('success', 'Post created successfully!');

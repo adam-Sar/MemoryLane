@@ -9,18 +9,31 @@ use Illuminate\Support\Facades\Auth;
 class CommentController extends Controller
 {
     function create(Request $request){
-        $data = $request->validate([
-            "body" => 'required'
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            "body" => 'required',
+            "post_id" => 'required|exists:posts,id',
+            "parent_id" => 'nullable|exists:comments,id'
         ]);
-        $comment = Comment::create(["user_id"=>Auth::id(),"post_id"=>$request->post_id]+$data);
         
-        if ($request->wantsJson()) {
+        if ($validator->fails()) {
             return response()->json([
-                'success' => true,
-                'comment' => $comment->load('user') // Load user for the frontend to display name/avatar
-            ]);
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
         
-        return redirect()->back();
+        $data = $validator->validated();
+        
+        $comment = Comment::create([
+            "user_id" => Auth::id(),
+            "post_id" => $request->post_id,
+            "parent_id" => $request->parent_id,
+            "body" => $data['body']
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'comment' => $comment->load('user', 'parent.user')
+        ]);
     }
 }

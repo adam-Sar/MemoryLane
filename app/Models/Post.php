@@ -15,20 +15,28 @@ class Post extends Model
         'body',
         'tag',
         'screenshot_path',
-        'doodle_path'
+        'doodle_path',
+        'community_id',
     ];
     public $timestamps = false;
     
     public function posts(){
         return $this->all();
     }
+    
     public function user(){
         return $this->belongsTo(User::class);
     }
+    
+    public function community(){
+        return $this->belongsTo(Community::class);
+    }
+    
     public function comments(){
         return $this->hasMany(Comment::class);
     }
+    
     public function likes() {
         return $this->hasMany(PostLike::class);
     }
-}   
+}

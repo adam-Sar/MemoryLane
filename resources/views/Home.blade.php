@@ -19,6 +19,29 @@
     .sidebar-left {
         position: sticky;
         top: 6rem;
+        max-height: calc(100vh - 8rem);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--neon-purple) var(--bg-input);
+    }
+    
+    /* Custom scrollbar for webkit browsers */
+    .sidebar-left::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .sidebar-left::-webkit-scrollbar-track {
+        background: var(--bg-input);
+        border-radius: 3px;
+    }
+    
+    .sidebar-left::-webkit-scrollbar-thumb {
+        background: var(--neon-purple);
+        border-radius: 3px;
+    }
+    
+    .sidebar-left::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-cyan);
     }
 
     .sidebar-nav {

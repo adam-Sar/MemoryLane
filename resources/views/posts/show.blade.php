@@ -158,6 +158,13 @@
     .comment-card:hover {
         border-color: var(--bg-card-hover);
     }
+    
+    .comment-card.reply {
+        margin-left: 2rem;
+        margin-top: 1rem;
+        border-left: 3px solid var(--neon-purple);
+        background: rgba(176, 38, 255, 0.05);
+    }
 
     .comment-header {
         display: flex;
@@ -377,7 +384,6 @@
         </article>
 
         <!-- Comment Input -->
-        <label for="commentBody">
         <div class="comment-form-card" style=>
             <form id="commentForm" onsubmit="submitComment(event)">
                 @csrf
@@ -390,37 +396,22 @@
                 </div>
             </form>
         </div>
-        </label>
         <!-- Comments List -->
         <div class="comments-container" id="commentsList">
             @foreach($comments as $comment)
-                <div class="comment-card" id="comment-{{ $comment->id }}">
-                    <div class="comment-header">
-                        <div class="comment-meta">
-                            <div class="user-avatar comment-avatar">
-                                {{ substr($comment->user->name ?? '?', 0, 1) }}
-                            </div>
-                            <div>
-                                <span style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">{{ $comment->user->name ?? 'User' }}</span>
-                                <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">• 1h ago</span>
-                            </div>
-                        </div>
+                @include('posts.partials.reply', ['comment' => $comment, 'post' => $post])
+                @if($comment->allReplies && $comment->allReplies->count() > 0)
+                    <div class="replies-container">
+                        @foreach($comment->allReplies as $nestedReply)
+                            @include('posts.partials.reply', [
+                                'comment' => $nestedReply, 
+                                'post' => $post, 
+                                'isReply' => true,
+                                'topParentId' => $comment->id
+                            ])
+                        @endforeach
                     </div>
-                    <div class="comment-body">
-                        {{ $comment->body }}
-                    </div>
-                    <div style="display: flex; gap: 1rem;">
-                        <button 
-                            class="action-btn {{ $comment->liked_by_me ? 'liked' : '' }}" 
-                            style="padding: 0; font-size: 0.85rem;"
-                            onclick="likeComment(this, {{ $comment->id }})"
-                            data-liked-by-me="{{ $comment->liked_by_me }}"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                            <span>{{ $comment->likes_count }}</span>
-                        </button>
-                    </div>
-                </div>
+                @endif
             @endforeach
             
             <div style="margin-top: 1.5rem;">
@@ -439,12 +430,12 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ md5(now()) }}">
     // Optimistic UI for Likes (Reused)
     function optimisticToggle(btn, delta, isComment = false) {
         const span = btn.querySelector('span');
         const svgs = btn.querySelectorAll('svg');
-        const count = parseInt(span.textContent, 10);
+        const count = parseInt(span.textContent.trim() || '0', 10);
         span.textContent = count + delta;
         if (delta > 0) {
             btn.classList.add('liked');
@@ -518,14 +509,22 @@
         // Clear input
         form.body.value = '';
         autoResize(form.body);
-        // 2. Background Request using Axios
-        // Axios is loaded in window calls via app.js -> bootstrap.js
-        window.axios.post("{{ route('create.comment') }}", {
-            post_id: form.post_id.value,
-            body: body
+        // 2. Background Request using fetch
+        fetch("{{ route('create.comment') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: form.querySelector('input[name="post_id"]').value,
+                body: body
+            })
         })
-        .then(response => {
-            const data = response.data;
+        .then(response => response.json())
+        .then(data => {
+            console.log('Server response:', data);
             if(data.success) {
                 // 3. Success: Update the temp element with real data
                 const realElement = document.getElementById(tempId);
@@ -545,6 +544,28 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                 <span>0</span>
                             </button>
+                            <button 
+                                class="action-btn" 
+                                style="padding: 0; font-size: 0.85rem; color: var(--neon-purple);"
+                                onclick="toggleReplyForm(${data.comment.id})"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                                Reply
+                            </button>
+                        </div>
+                        <div id="reply-form-${data.comment.id}" class="reply-form" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                            <form onsubmit="submitReply(event, ${data.comment.id})">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="post_id" value="{{ $post->id }}">
+                                <input type="hidden" name="parent_id" value="${data.comment.id}">
+                                <div style="margin-bottom: 0.5rem;">
+                                    <textarea name="body" id="replyBody-${data.comment.id}" placeholder="Write a reply..." oninput="autoResize(this)" required style="min-height: 2.5rem; display: block; width: 100%; resize: none; overflow: hidden; height: auto; line-height: 1.4rem; padding: 0.6rem 0.8rem; border-radius: 10px; font-size: 0.95rem; border: none; outline: none; box-sizing: border-box; background: transparent; color: var(--text-main); margin-bottom: 0rem;"></textarea>
+                                </div>
+                                <div style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                    <button type="button" class="btn btn-flat" onclick="toggleReplyForm(${data.comment.id})" style="padding: 0.5rem 1rem;">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Reply</button>
+                                </div>
+                            </form>
                         </div>
                     `;
                     realElement.querySelector('.comment-body').nextElementSibling.outerHTML = actionsHTML;
@@ -553,6 +574,10 @@
                     let currentCount = parseInt(countSpan.textContent);
                     countSpan.textContent = currentCount + 1;
                 }
+            } else {
+                // Handle validation errors or other failure
+                console.error('Comment failed:', data.errors);
+                throw new Error(data.errors ? Object.values(data.errors).join(', ') : 'Failed to post comment');
             }
         })
         .catch(error => {
@@ -570,6 +595,161 @@
     function autoResize(el) {
         el.style.height = 'auto';
         el.style.height = el.scrollHeight + 'px';
+    }
+    
+    // Toggle reply form visibility
+    function toggleReplyForm(commentId) {
+        const form = document.getElementById(`reply-form-${commentId}`);
+        if (form.style.display === 'none') {
+            form.style.display = 'block';
+            // Focus the textarea
+            const textarea = document.getElementById(`replyBody-${commentId}`);
+            if (textarea) {
+                setTimeout(() => textarea.focus(), 100);
+            }
+        } else {
+            form.style.display = 'none';
+            // Clear the textarea
+            const textarea = document.getElementById(`replyBody-${commentId}`);
+            if (textarea) {
+                textarea.value = '';
+                autoResize(textarea);
+            }
+        }
+    }
+    
+    // Submit reply to a comment
+    function submitReply(event, parentCommentId) {
+        event.preventDefault();
+        const form = event.target;
+        const body = form.body.value;
+        const countSpan = document.getElementById('comment-count-display');
+        const parentComment = document.getElementById(`comment-${parentCommentId}`);
+        const topParentId = form.querySelector('input[name="top_parent_id"]') ? form.querySelector('input[name="top_parent_id"]').value : parentCommentId;
+        const topParentComment = document.getElementById(`comment-${topParentId}`);
+        
+        if (!parentComment || !topParentComment) return;
+        
+        // 1. Create optimistic reply element
+        const tempId = 'reply-temp-' + Date.now();
+        const userName = "{{ Auth::user()->name }}";
+        const userInitial = userName.charAt(0);
+        const parentUserName = parentComment.querySelector('.comment-meta span:first-child').textContent;
+        
+        // Find or create direct replies container under TOP parent
+        let repliesContainer = topParentComment.nextElementSibling;
+        if (!repliesContainer || !repliesContainer.classList.contains('replies-container')) {
+            repliesContainer = document.createElement('div');
+            repliesContainer.className = 'replies-container';
+            topParentComment.after(repliesContainer);
+        }
+        
+        const optimisticHTML = `
+            <div class="comment-card reply" id="${tempId}" style="opacity: 0.7;">
+                <div class="comment-header">
+                    <div class="comment-meta">
+                        <div class="user-avatar comment-avatar">${userInitial}</div>
+                        <div>
+                            <span style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">${userName}</span>
+                            <span style="font-size: 0.8rem; color: var(--neon-purple); margin-left: 0.5rem;">→ ${parentUserName}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">• just now</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-body">${body}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Posting...</div>
+            </div>
+        `;
+        
+        // Add reply to container
+        repliesContainer.insertAdjacentHTML('beforeend', optimisticHTML);
+        
+        // Clear form and hide it
+        form.body.value = '';
+        autoResize(form.body);
+        toggleReplyForm(parentCommentId);
+        
+        // 2. Submit to server
+        fetch("{{ route('create.comment') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: form.querySelector('input[name="post_id"]').value,
+                parent_id: form.querySelector('input[name="parent_id"]').value,
+                body: body
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                // 3. Update optimistic element with real data
+                const realElement = document.getElementById(tempId);
+                if(realElement) {
+                    realElement.style.opacity = '1';
+                    realElement.id = 'comment-' + data.comment.id;
+                    
+                    // Replace "Posting..." with like button
+                    const actionsHTML = `
+                        <div style="display: flex; gap: 1rem;">
+                            <button 
+                                class="action-btn" 
+                                style="padding: 0; font-size: 0.85rem;" 
+                                onclick="likeComment(this, ${data.comment.id})"
+                                data-liked-by-me="0"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                <span>0</span>
+                            </button>
+                            <button 
+                                class="action-btn" 
+                                style="padding: 0; font-size: 0.85rem; color: var(--neon-purple);"
+                                onclick="toggleReplyForm(${data.comment.id})"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                                Reply
+                            </button>
+                        </div>
+                        <div id="reply-form-${data.comment.id}" class="reply-form" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                            <form onsubmit="submitReply(event, ${data.comment.id})">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="post_id" value="{{ $post->id }}">
+                                <input type="hidden" name="parent_id" value="${data.comment.id}">
+                                <input type="hidden" name="top_parent_id" value="${topParentId}">
+                                <div style="margin-bottom: 0.5rem;">
+                                    <textarea name="body" id="replyBody-${data.comment.id}" placeholder="Write a reply..." oninput="autoResize(this)" required style="min-height: 2.5rem; display: block; width: 100%; resize: none; overflow: hidden; height: auto; line-height: 1.4rem; padding: 0.6rem 0.8rem; border-radius: 10px; font-size: 0.95rem; border: none; outline: none; box-sizing: border-box; background: transparent; color: var(--text-main); margin-bottom: 0rem;"></textarea>
+                                </div>
+                                <div style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                    <button type="button" class="btn btn-flat" onclick="toggleReplyForm(${data.comment.id})" style="padding: 0.5rem 1rem;">Cancel</button>
+                                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Reply</button>
+                                </div>
+                            </form>
+                        </div>
+                    `;
+                    realElement.querySelector('.comment-body').nextElementSibling.outerHTML = actionsHTML;
+                    
+                    // Update comment count
+                    let currentCount = parseInt(countSpan.textContent);
+                    countSpan.textContent = currentCount + 1;
+                }
+            } else {
+                // Handle validation errors or other failure
+                console.error('Reply failed:', data.errors);
+                throw new Error(data.errors ? Object.values(data.errors).join(', ') : 'Failed to post reply');
+            }
+        })
+        .catch(error => {
+            console.error('Reply Error:', error);
+            // 4. Remove optimistic element on error
+            const el = document.getElementById(tempId);
+            if(el) {
+                el.remove();
+                alert('Failed to post reply. Please try again.');
+            }
+        });
     }
 
     // Switch media tabs (screenshot ↔ doodle)

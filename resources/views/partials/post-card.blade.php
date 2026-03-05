@@ -6,6 +6,17 @@
         </div>
         <div class="post-meta">
             <span class="post-author">{{ $post->user->name ?? 'Anonymous' }}</span>
+            @if($post->community)
+                <a href="{{ route('communities.show', $post->community->slug) }}" class="post-community-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.3rem;">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    {{ $post->community->name }}
+                </a>
+            @endif
             <span class="post-date">
                 @if($post->tag)
                     <span class="post-tag-sm">{{ $post->tag }}</span>
@@ -93,6 +104,29 @@
 </article>
 
 <style>
+    .post-community-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        background: linear-gradient(135deg, rgba(176, 38, 255, 0.15), rgba(255, 0, 128, 0.15));
+        color: var(--neon-purple);
+        border: 1px solid var(--neon-purple);
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin: 0.3rem 0.5rem 0.3rem 0;
+        transition: all 0.2s;
+        box-shadow: 0 0 8px rgba(176, 38, 255, 0.2);
+    }
+    
+    .post-community-link:hover {
+        background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 0 12px rgba(176, 38, 255, 0.4);
+    }
+    
     .post-tag-sm {
         display: inline-block;
         padding: 0.2rem 0.6rem;
